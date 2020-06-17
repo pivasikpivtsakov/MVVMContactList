@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -10,6 +11,7 @@ using Microsoft.Toolkit.Uwp;
 using MVVMContactList.Annotations;
 using MVVMContactList.Converters;
 using MVVMContactList.Utils;
+using VkNetModel = VkNet.Model;
 
 namespace MVVMContactList.ViewModels
 {
@@ -17,19 +19,24 @@ namespace MVVMContactList.ViewModels
     {
         public class ContactsSource : IIncrementalSource<Contact>
         {
-            private readonly List<Contact> _contactsList;
+            private readonly List<VkNetModel.User> _usersList;
 
-            public ContactsSource(IEnumerable<Contact> contactsList)
+            private static readonly VkUserToContactConverter _converter = new VkUserToContactConverter();
+
+            public ContactsSource(IEnumerable<VkNetModel.User> usersList)
             {
-                _contactsList = contactsList.ToList();
+                _usersList = usersList.ToList();
             }
 
             public async Task<IEnumerable<Contact>> GetPagedItemsAsync(int pageIndex, int pageSize,
                 CancellationToken cancellationToken = new CancellationToken())
             {
                 // simulate long work
-                await Task.Delay(1000, cancellationToken);
-                return await Task.Factory.StartNew(() => _contactsList.Skip(pageIndex * pageSize).Take(pageSize),
+                await Task.Delay(500, cancellationToken);
+                return await Task.Factory.StartNew(() => _usersList
+                        .Skip(pageIndex * pageSize)
+                        .Take(pageSize)
+                        .Select(user => (Contact) _converter.Convert(user, typeof(Contact), null, string.Empty)),
                     cancellationToken);
             }
         }
@@ -52,12 +59,9 @@ namespace MVVMContactList.ViewModels
         private async void FillContactsList()
         {
             // method is async void so it can be run in constructor
-            var converter = new VkUserToContactConverter();
             _contactsSource = new ContactsSource(
-                new List<Contact>(
-                    (await VkUtils.GetAllFriendsOr5000WithDefaultFields())
-                    .Select(x =>
-                        (Contact) converter.Convert(x, typeof(Contact), null, string.Empty))));
+                new List<VkNetModel.User>(
+                    await VkUtils.GetFriendsWithDefaultFields()));
             ContactsCollection = new IncrementalLoadingCollection<ContactsSource, Contact>(_contactsSource, 5);
             OnPropertyChanged(nameof(ContactsCollection));
         }
