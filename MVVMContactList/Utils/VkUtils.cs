@@ -16,7 +16,7 @@ namespace MVVMContactList.Utils
                 Count = count,
                 Offset = offset,
                 Fields = ProfileFields.FirstName | ProfileFields.LastName | ProfileFields.ScreenName |
-                         ProfileFields.Photo50
+                         ProfileFields.Online | ProfileFields.Photo50
             });
         }
     }

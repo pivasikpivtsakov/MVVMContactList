@@ -12,14 +12,13 @@
         <viewModels:MainPageViewModel />
     </Page.DataContext>
 
-    <Grid>
+    <Grid Padding="0,32,0,0">
         <SplitView DisplayMode="Inline" IsPaneOpen="True">
             <SplitView.Pane>
                 <ListView x:Name="ContactsListView"
-                    IsItemClickEnabled="True"
-                    ItemsSource="{Binding ShowableUsersCollection}"
-                    
-                    SelectedItem="{Binding SelectedShowableUser, Mode=TwoWay}">
+                          IsItemClickEnabled="True"
+                          ItemsSource="{Binding ShowableUsersCollection}"
+                          SelectedItem="{Binding SelectedShowableUser, Mode=TwoWay}">
                     <ListView.ItemTemplate>
                         <DataTemplate>
                             <Grid>
@@ -33,22 +32,32 @@
                                 </Grid.RowDefinitions>
                                 <PersonPicture Grid.Column="0" Grid.RowSpan="2"
                                                ProfilePicture="{Binding ImageSource}"
-                                               Width="50"
-                                               />
+                                               Width="50" />
                                 <TextBlock Grid.Row="0" Grid.Column="1"
                                            Text="{Binding UserReadableName}" VerticalAlignment="Bottom"
-                                           HorizontalAlignment="Left"
-                                           />
+                                           HorizontalAlignment="Left" />
                             </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
             </SplitView.Pane>
             <Grid>
-                <PersonPicture
-                    Contact="{Binding SelectedShowableUser.ImageSource, UpdateSourceTrigger=PropertyChanged}" />
-                <TextBlock Text="{Binding SelectedShowableUser.User.FirstName, UpdateSourceTrigger=PropertyChanged}"
-                           Style="{ThemeResource BodyTextBlockStyle}" />
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="3*" />
+                </Grid.RowDefinitions>
+                <StackPanel Grid.Row="0">
+                    <PersonPicture
+                        ProfilePicture="{Binding SelectedShowableUser.ImageSource, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        Text="{Binding SelectedShowableUser.UserReadableName, UpdateSourceTrigger=PropertyChanged}"
+                        Style="{ThemeResource HeaderTextBlockStyle}" />
+                </StackPanel>
+                <StackPanel Grid.Row="1">
+                    <TextBlock Text="Online: " />
+                    <TextBlock Text="{Binding SelectedShowableUser.User.Online, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
             </Grid>
         </SplitView>
     </Grid>
