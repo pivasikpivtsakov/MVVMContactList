@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Windows.ApplicationModel.Contacts;
 using Microsoft.Toolkit.Collections;
 using Microsoft.Toolkit.Uwp;
 using MVVMContactList.Annotations;
-using MVVMContactList.Converters;
+using MVVMContactList.Common;
 using MVVMContactList.Utils;
 using VkNetModel = VkNet.Model;
 
@@ -17,53 +15,57 @@ namespace MVVMContactList.ViewModels
 {
     public class MainPageViewModel : INotifyPropertyChanged
     {
-        public class ContactsSource : IIncrementalSource<Contact>
+        public class ShowableUsersSource : IIncrementalSource<ShowableUser>
         {
             private readonly List<VkNetModel.User> _usersList;
 
-            private static readonly VkUserToContactConverter _converter = new VkUserToContactConverter();
-
-            public ContactsSource(IEnumerable<VkNetModel.User> usersList)
+            public ShowableUsersSource(IEnumerable<VkNetModel.User> usersList)
             {
                 _usersList = usersList.ToList();
             }
 
-            public async Task<IEnumerable<Contact>> GetPagedItemsAsync(int pageIndex, int pageSize,
+            public async Task<IEnumerable<ShowableUser>> GetPagedItemsAsync(int pageIndex, int pageSize,
                 CancellationToken cancellationToken = new CancellationToken())
             {
-                // simulate long work
-                await Task.Delay(500, cancellationToken);
-                return await Task.Factory.StartNew(() => _usersList
-                        .Skip(pageIndex * pageSize)
-                        .Take(pageSize)
-                        .Select(user => (Contact) _converter.Convert(user, typeof(Contact), null, string.Empty)),
-                    cancellationToken);
+                var pagedUsers = _usersList
+                    .Skip(pageIndex * pageSize)
+                    .Take(pageSize);
+                var pagedShowableUsers = new List<ShowableUser>();
+                foreach (var user in pagedUsers)
+                {
+                    var showableUser = new ShowableUser(user);
+                    await showableUser.LoadImageToSource();
+                    pagedShowableUsers.Add(showableUser);
+                }
+
+                return pagedShowableUsers;
             }
         }
 
-        private ContactsSource _contactsSource;
-        private Contact _selectedContact;
-        public IncrementalLoadingCollection<ContactsSource, Contact> ContactsCollection { get; private set; }
+        private ShowableUsersSource _showableUsersSource;
+        private ShowableUser _selectedShowableUser;
+        public IncrementalLoadingCollection<ShowableUsersSource, ShowableUser> ShowableUsersCollection { get; private set; }
 
-        public Contact SelectedContact
+        public ShowableUser SelectedShowableUser
         {
-            get => _selectedContact;
+            get => _selectedShowableUser;
             // bound in xaml, don't make private
             set
             {
-                _selectedContact = value;
-                OnPropertyChanged(nameof(SelectedContact));
+                _selectedShowableUser = value;
+                OnPropertyChanged(nameof(SelectedShowableUser));
             }
         }
 
         private async void FillContactsList()
         {
             // method is async void so it can be run in constructor
-            _contactsSource = new ContactsSource(
+            _showableUsersSource = new ShowableUsersSource(
                 new List<VkNetModel.User>(
                     await VkUtils.GetFriendsWithDefaultFields()));
-            ContactsCollection = new IncrementalLoadingCollection<ContactsSource, Contact>(_contactsSource, 5);
-            OnPropertyChanged(nameof(ContactsCollection));
+            ShowableUsersCollection =
+                new IncrementalLoadingCollection<ShowableUsersSource, ShowableUser>(_showableUsersSource, 5);
+            OnPropertyChanged(nameof(ShowableUsersCollection));
         }
 
         public MainPageViewModel()

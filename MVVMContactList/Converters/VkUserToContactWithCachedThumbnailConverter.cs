@@ -1,13 +1,17 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Tasks;
+using Windows.Storage;
+using Windows.Storage.BulkAccess;
 using Windows.Storage.Streams;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Data;
 using VkNetModel = VkNet.Model;
 using Contact = Windows.ApplicationModel.Contacts.Contact;
 
 namespace MVVMContactList.Converters
 {
-    public class VkUserToContactConverter : IValueConverter
+    public class VkUserToContactWithCachedThumbnailConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {

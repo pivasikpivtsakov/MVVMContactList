@@ -17,9 +17,9 @@
             <SplitView.Pane>
                 <ListView x:Name="ContactsListView"
                     IsItemClickEnabled="True"
-                    ItemsSource="{Binding ContactsCollection}"
+                    ItemsSource="{Binding ShowableUsersCollection}"
                     
-                    SelectedItem="{Binding SelectedContact, Mode=TwoWay}">
+                    SelectedItem="{Binding SelectedShowableUser, Mode=TwoWay}">
                     <ListView.ItemTemplate>
                         <DataTemplate>
                             <Grid>
@@ -32,15 +32,12 @@
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
                                 <PersonPicture Grid.Column="0" Grid.RowSpan="2"
-                                               Contact="{Binding}"
+                                               ProfilePicture="{Binding ImageSource}"
                                                Width="50"
                                                />
                                 <TextBlock Grid.Row="0" Grid.Column="1"
-                                           Text="{Binding FirstName}" VerticalAlignment="Bottom"
+                                           Text="{Binding UserReadableName}" VerticalAlignment="Bottom"
                                            HorizontalAlignment="Left"
-                                           />
-                                <TextBlock Grid.Row="1" Grid.Column="1"
-                                           Text="{Binding LastName}" VerticalAlignment="Top"
                                            />
                             </Grid>
                         </DataTemplate>
@@ -49,8 +46,8 @@
             </SplitView.Pane>
             <Grid>
                 <PersonPicture
-                    Contact="{Binding SelectedContact, UpdateSourceTrigger=PropertyChanged}" />
-                <TextBlock Text="{Binding SelectedContact.FirstName, UpdateSourceTrigger=PropertyChanged}"
+                    Contact="{Binding SelectedShowableUser.ImageSource, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBlock Text="{Binding SelectedShowableUser.User.FirstName, UpdateSourceTrigger=PropertyChanged}"
                            Style="{ThemeResource BodyTextBlockStyle}" />
             </Grid>
         </SplitView>
